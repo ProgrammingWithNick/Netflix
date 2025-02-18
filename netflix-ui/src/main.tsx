@@ -1,30 +1,28 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Netflix from './pages/Netflix.tsx'
-import Login from './pages/Login.tsx'
-import Signup from './pages/Signup.tsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Netflix from './pages/Netflix.tsx';
+import Login from './pages/Login.tsx';
+import Signup from './pages/Signup.tsx';
+import './index.css';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Netflix />
+    element: <Netflix />, // Home page
   },
   {
     path: "/login",
-    element: <Login />
+    element: <Login />, // Login page
   },
   {
     path: "/signup",
-    element: <Signup />
+    element: <Signup  />, // Signup page
   },
-])
+]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
     <RouterProvider router={router} />
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

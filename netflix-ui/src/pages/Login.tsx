@@ -1,120 +1,88 @@
-import { useState } from "react";
-import BackgroundImage from "../components/BackgroundImage"
-import Header from "../components/Header"
+import { useEffect } from "react";
+import BackgroundImage from "../components/BackgroundImage";
+import Header from "../components/Header";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { firebaseAuth } from "../utils/firebase";
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 
 const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
 });
 
-type FormField = z.infer<typeof schema>
+type FormField = z.infer<typeof schema>;
 
-type logIn = {
-    login: string;
-}
-
-const Login = ({ login }: logIn) => {
-
+const Login = () => {
     const navigate = useNavigate();
 
-    const [formvalues, setFormvalue] = useState<FormField>({
-        email: "",
-        password: "",
+    const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<FormField>({
+        resolver: zodResolver(schema),
     });
 
-    const {
-        register,
-        handleSubmit,
-        setError,
-        formState: { errors, isSubmitting },
-    } = useForm<FormField>({
-        resolver: zodResolver(schema)
-    });
-
-    const onSubmit: SubmitHandler<FormField> = async () => {
+    const onSubmit: SubmitHandler<FormField> = async (data) => {
         try {
-            // await new Promise((resolve) => setTimeout(resolve, 1000));
-            const { email, password } = formvalues;
-            await signInWithEmailAndPassword(firebaseAuth, email, password);
-            // alert("User signed up successfully!");
-        } catch (error) {
-            {
-                errors ? setError("email", {
-                    message: "✨This email already use✨"
-                }) :
-                    setError("password", {
-                        message: "✨This password wrong✨",
-                    })
+            await signInWithEmailAndPassword(firebaseAuth, data.email, data.password);
+        } catch (error: any) {
+            if (error.code === "auth/user-not-found") {
+                setError("email", { message: "No account found with this email address" });
+            } else if (error.code === "auth/wrong-password") {
+                setError("password", { message: "Incorrect password. Please try again." });
+            } else {
+                console.error("Login error:", error);
             }
-            console.log(error);
         }
-    }
+    };
 
-    onAuthStateChanged(firebaseAuth, (currentUser) => {
-        if (currentUser) navigate("/");
-    })
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormvalue({ ...formvalues, [e.target.name]: e.target.value })
-    }
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+            if (currentUser) navigate("/"); // Navigate to home if logged in
+        });
+        return () => unsubscribe();
+    }, [navigate]);
 
     return (
-        <div>
-            <div className="relative overflow-hidden ">
-                <BackgroundImage />
-                <div className="absolute top-0 ">
-                    <Header login={login} />
-                    {/* <div className="flex flex-col items-center justify-center gap-3 px-10 text-center text-white mt-9"> */}
-                    {/* <div className="font-extrabold px-80">
-                            <span className="md:text-5xl">Unlimited movies, TV shows and more</span>
-                            <span className="md:text-3xl">watch anywhere. Cancel anytime.</span>
-                            <span className="md:text-2xl" >
-                                Ready to watch ? Enter your email to create or restart membership.
-                            </span>
-                        </div> */}
-                    <div className="flex flex-col gap-3 px-10 my-40 text-center text-white  mr-[460px] ml-[460px] ">
-                        <form onSubmit={handleSubmit(onSubmit)}
-                            className="gap-2 p-12 bg-[#000000b0] ">
-
-                            <input {...register("email",)} type="text" placeholder="Email"
-                                onChange={handleInputChange}
-                                value={formvalues.email}
-                                className="my-2 text-black w-[70%] h-5"
+        <div className="relative flex items-center justify-center min-h-screen bg-black">
+            <BackgroundImage />
+            <div className="absolute top-0 w-full">
+                <Header login={isSubmitting} />
+                <div className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3">
+                    <h2 className="mb-6 text-2xl font-bold text-center">Sign In</h2>
+                    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+                        <div className="flex flex-col gap-4">
+                            <input
+                                {...register("email")}
+                                type="email"
+                                placeholder="Email"
+                                className="w-full p-3 text-black rounded-md"
                                 required
-                            /> <br />
-                            {errors.email && <div className="font-extrabold text-red-600 ">{errors.email.message}</div>}
+                            />
+                            {errors.email && <p className="text-red-500">{errors.email.message}</p>}
 
-                            <input {...register("password")} type="text" placeholder="Password"
-                                onChange={handleInputChange}
-                                value={formvalues.password}
-                                className="mt-1 mb-3 text-black"
+                            <input
+                                {...register("password")}
+                                type="password"
+                                placeholder="Password"
+                                className="w-full p-3 text-black rounded-md"
                                 required
-                            /> <br />
-                            {errors.password && <div className="mb-5 font-extrabold text-red-600">{errors.password.message}</div>}
+                            />
+                            {errors.password && <p className="text-red-500">{errors.password.message}</p>}
 
                             <button
-                                disabled={isSubmitting}
-                                onClick={handleSubmit(onSubmit)}
                                 type="submit"
-                                className="px-5 py-2 m-auto font-extrabold bg-red-900 rounded-lg "
+                                disabled={isSubmitting}
+                                className="w-full py-3 font-bold text-white bg-red-600 rounded-md hover:bg-red-700"
                             >
-                                {isSubmitting ? "Loading..." : "Log In"}
+                                {isSubmitting ? "Logging in..." : "Log In"}
                             </button>
-
-                        </form>
-                    </div>
-                    {/* </div> */}
+                        </div>
+                    </form>
                 </div>
-
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;

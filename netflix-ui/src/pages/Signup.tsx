@@ -1,117 +1,103 @@
-import { useState } from "react";
-import BackgroundImage from "../components/BackgroundImage"
-import Header from "../components/Header"
+import { useEffect } from "react";
+import BackgroundImage from "../components/BackgroundImage";
+import Header from "../components/Header";
 import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { firebaseAuth } from "../utils/firebase";
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 
 const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+    email: z.string().email({ message: "Invalid email format" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-type FormField = z.infer<typeof schema>
+type FormField = z.infer<typeof schema>;
 
-type logIn = {
-    login: string;
-}
-
-const Signup = ({ login }: logIn) => {
-
+const Signup = () => {
     const navigate = useNavigate();
-
-    const [formvalues, setFormvalue] = useState<FormField>({
-        email: "",
-        password: "",
+    const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<FormField>({
+        resolver: zodResolver(schema),
     });
 
-    const {
-        register,
-        handleSubmit,
-        setError,
-        formState: { errors, isSubmitting },
-    } = useForm<FormField>({
-        resolver: zodResolver(schema)
-    });
-
-    const onSubmit: SubmitHandler<FormField> = async () => {
+    const onSubmit: SubmitHandler<FormField> = async (data) => {
         try {
-            // await new Promise((resolve) => setTimeout(resolve, 1000));
-            const { email, password } = formvalues;
-            await createUserWithEmailAndPassword(firebaseAuth, email, password);
-            // alert("User signed up successfully!");
-        } catch (error) {
-            {
-                errors ? setError("email", {
-                    message: "✨This email already use✨"
-                }) :
-                    setError("password", {
-                        message: "✨This password wrong✨",
-                    })
+            await createUserWithEmailAndPassword(firebaseAuth, data.email, data.password);
+        } catch (error: any) {
+            if (error.code === "auth/email-already-in-use") {
+                setError("email", { message: "This email is already in use" });
+            } else if (error.code === "auth/weak-password") {
+                setError("password", { message: "Weak password! Try a stronger one" });
+            } else {
+                console.error("Signup error:", error);
             }
-            console.log(error);
         }
-    }
+    };
 
-    onAuthStateChanged(firebaseAuth, (currentUser) => {
-        if (currentUser) navigate("/");
-    })
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormvalue({ ...formvalues, [e.target.name]: e.target.value })
-    }
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+            if (currentUser) navigate("/"); // Navigate to home if logged in
+        });
+        return () => unsubscribe();
+    }, [navigate]);
 
     return (
-        <div className="relative overflow-hidden ">
+        <div className="relative flex flex-col items-center justify-center min-h-screen bg-black">
             <BackgroundImage />
-            <div className="absolute top-0 ">
-                <Header login={login} />
-                <div className="flex flex-col items-center justify-center gap-3 px-10 text-center text-white mt-9">
-                    <div className="font-extrabold px-80">
-                        <h1 className="md:text-5xl">Unlimited movies, TV shows and more</h1>
-                        <h4 className="md:text-3xl">watch anywhere. Cancel anytime.</h4>
-                        <h6 className="md:text-2xl" >
-                            Ready to watch ? Enter your email to create or restart membership.
-                        </h6>
-                    </div>
-
-                    <form onSubmit={handleSubmit(onSubmit)}
-                        className="gap-2 p-10 m-auto mb-5 backdrop-blur-md bg-[#000000b0]">
-
-                        <input {...register("email",)} type="text" placeholder="Email"
-                            onChange={handleInputChange}
-                            value={formvalues.email}
-                            className="my-2 text-black w-[70%] h-5"
-                            required
-                        /> <br />
-                        {errors.email && <div className="font-extrabold text-red-600 ">{errors.email.message}</div>}
-
-                        <input {...register("password")} type="text" placeholder="Password"
-                            onChange={handleInputChange}
-                            value={formvalues.password}
-                            className="mt-1 mb-3 text-black"
-                            required
-                        /> <br />
-                        {errors.password && <div className="mb-5 font-extrabold text-red-600">{errors.password.message}</div>}
-
-                        <button
-                            disabled={isSubmitting}
-                            onClick={handleSubmit(onSubmit)}
-                            type="submit"
-                            className="px-5 py-2 m-auto font-extrabold bg-red-900 rounded-lg "
-                        >
-                            {isSubmitting ? "Loading..." : "Sign Up"}
-                        </button>
-
-                    </form>
-                </div>
+            <div className="absolute inset-0 bg-black/60"></div>
+            
+            {/* Header */}
+            <div className="absolute top-0 w-full">
+                <Header login={isSubmitting} />
             </div>
 
+            {/* Content */}
+            <div className="z-10 flex flex-col items-center w-full px-4 text-center text-white sm:px-10 md:max-w-2xl">
+                <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">
+                    Unlimited movies, TV shows, and more
+                </h1>
+                <h4 className="mt-2 text-lg sm:text-xl md:text-2xl">
+                    Watch anywhere. Cancel anytime.
+                </h4>
+                <p className="mt-2 text-sm sm:text-base md:text-lg">
+                    Ready to watch? Enter your email to create or restart membership.
+                </p>
+
+                {/* Form */}
+                <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="w-full max-w-md p-6 mt-6 rounded-lg shadow-lg bg-black/70 backdrop-blur-md"
+                >
+                    <input
+                        {...register("email")}
+                        type="email"
+                        placeholder="Email"
+                        className="w-full h-12 p-3 mb-3 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        required
+                    />
+                    {errors.email && <p className="mb-2 text-sm text-red-500">{errors.email.message}</p>}
+
+                    <input
+                        {...register("password")}
+                        type="password"
+                        placeholder="Password"
+                        className="w-full h-12 p-3 mb-3 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        required
+                    />
+                    {errors.password && <p className="mb-2 text-sm text-red-500">{errors.password.message}</p>}
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-3 text-lg font-bold text-white bg-red-600 rounded-md hover:bg-red-700"
+                    >
+                        {isSubmitting ? "Loading..." : "Sign Up"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
-}
+};
 
-export default Signup
+export default Signup;

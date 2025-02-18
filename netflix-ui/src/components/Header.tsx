@@ -1,28 +1,34 @@
-// import { useState } from "react";
-import { logoImg } from "../utils/images"
-import { useNavigate } from "react-router-dom"
+import { logoImg } from "../utils/images";
+import { useNavigate, useLocation } from "react-router-dom";
 
-interface logIn {
-    login: string;
+interface LogInProps {
+    login: boolean;
 }
 
-const Header = ({ login }: logIn) => {
-    
-    const navigator = useNavigate();
+const Header = ({ login }: LogInProps) => {
+    const navigate = useNavigate();
+    const location = useLocation(); // ✅ Correct way to get current path
+
     return (
+        <header className="w-full py-4 bg-transparent">
+            <div className="container flex items-center justify-between px-5 mx-auto md:px-10">
+                {/* Logo */}
+                <img
+                    src={logoImg}
+                    alt="logo"
+                    className="h-12 md:h-16 max-w-[120px] md:max-w-[150px]"
+                />
 
-        <div className="flex items-center justify-between" >
-            <div className="">
-                <img className="h-20 ml-5" src={logoImg} alt="logo" />
+                {/* Login/Signup Button */}
+                <button
+                    onClick={() => navigate(location.pathname === "/login" ? "/signup" : "/login")}
+                    className="px-4 py-2 text-sm font-semibold text-white transition bg-red-700 rounded-lg hover:bg-red-800 md:px-5 md:py-2 md:text-base"
+                >
+                    {location.pathname === "/login" ? "Sign Up" : "Log In"}
+                </button>
             </div>
-            <button
-                onClick={() => navigator(login ? "/login" : "/signup")}
-                className="px-4 py-1 mr-10 font-bold text-white bg-red-700 border-none rounded-lg cursor-pointer "
-            >
-                {login ? "Log In" : "Sign Up"}
-            </button>
-        </div>
-    )
-}
+        </header>
+    );
+};
 
-export default Header
+export default Header;

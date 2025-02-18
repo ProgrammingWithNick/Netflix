@@ -1,14 +1,18 @@
-// import background from "../assets/login.jpg"
 import { loginImg } from "../utils/images";
 
 const BackgroundImage = () => {
     return (
-        <>
-            <div className="w-screen h-screen">
-                <img className="w-screen h-screen" src={loginImg} alt="background" />
-            </div>
-        </>
-    )
-}
+        <div className="absolute inset-0 w-full h-full">
+            {/* Background Image */}
+            <img
+                src={loginImg}
+                alt="background"
+                className="object-cover w-full h-full"
+            />
+            {/* Dark Overlay */}
+            <div className="absolute inset-0 bg-black/50"></div>
+        </div>
+    );
+};
 
-export default BackgroundImage
+export default BackgroundImage;
