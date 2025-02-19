@@ -4,6 +4,7 @@ import { logoImg } from "../utils/images";
 import { FaPowerOff, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { firebaseAuth } from "../utils/firebase";
+import { motion } from "framer-motion";
 
 interface NavItemProps {
     name: string;
@@ -36,8 +37,8 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
 
     // Check authentication state
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
-            if (!currentUser) navigate("/login");
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser ) => {
+            if (!currentUser ) navigate("/login");
         });
         return () => unsubscribe();
     }, [navigate]);
@@ -64,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                     {/* Search Box */}
                     <div className="relative flex items-center">
                         {showSearch && (
-                            <input
+                            <motion.input
                                 type="text"
                                 placeholder="Search..."
                                 className="w-40 px-3 py-1 text-black rounded-md md:w-56 focus:outline-none"
@@ -73,6 +74,9 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                 onBlur={() => {
                                     if (!inputHover) setShowSearch(false);
                                 }}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
                             />
                         )}
                         <button onClick={() => setShowSearch(!showSearch)} className="p-2 text-white rounded-md hover:bg-gray-700">
@@ -94,7 +98,13 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
 
             {/* Mobile Menu */}
             {menuOpen && (
-                <div className="absolute top-0 left-0 w-full h-screen bg-black/90 md:hidden">
+                <motion.div
+                    className="absolute top-0 left-0 w-full h-screen bg-black/90 md:hidden"
+                    initial={{ opacity: 0, x: -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ duration: 0.3 }}
+                >
                     <button onClick={() => setMenuOpen(false)} className="absolute text-white top-6 right-6">
                         <FaTimes className="w-6 h-6" />
                     </button>
@@ -106,7 +116,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                             <FaPowerOff className="w-5 h-5" />
                         </button>
                     </ul>
-                </div>
+                </motion.div>
             )}
         </nav>
     );

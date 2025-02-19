@@ -7,6 +7,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const schema = z.object({
     email: z.string().email({ message: "Invalid email format" }),
@@ -37,65 +38,72 @@ const Signup = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
-            if (currentUser) navigate("/"); // Navigate to home if logged in
+            if (currentUser) navigate("/");
         });
         return () => unsubscribe();
     }, [navigate]);
 
     return (
-        <div className="relative flex flex-col items-center justify-center min-h-screen bg-black">
+        <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
             <BackgroundImage />
             <div className="absolute inset-0 bg-black/60"></div>
-            
-            {/* Header */}
-            <div className="absolute top-0 w-full">
-                <Header login={isSubmitting} />
-            </div>
-
-            {/* Content */}
-            <div className="z-10 flex flex-col items-center w-full px-4 text-center text-white sm:px-10 md:max-w-2xl">
-                <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">
-                    Unlimited movies, TV shows, and more
-                </h1>
-                <h4 className="mt-2 text-lg sm:text-xl md:text-2xl">
-                    Watch anywhere. Cancel anytime.
-                </h4>
-                <p className="mt-2 text-sm sm:text-base md:text-lg">
-                    Ready to watch? Enter your email to create or restart membership.
-                </p>
-
-                {/* Form */}
-                <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="w-full max-w-md p-6 mt-6 rounded-lg shadow-lg bg-black/70 backdrop-blur-md"
+            <Header login={isSubmitting} />
+            <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="z-10 flex flex-col items-center w-full px-4 text-center text-white sm:px-10 md:max-w-2xl"
+            >
+                <motion.h1
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="text-3xl font-bold text-transparent  sm:text-5xl md:text-6xl bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text"
                 >
-                    <input
-                        {...register("email")}
-                        type="email"
-                        placeholder="Email"
-                        className="w-full h-12 p-3 mb-3 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    />
-                    {errors.email && <p className="mb-2 text-sm text-red-500">{errors.email.message}</p>}
+                    Unlimited movies, TV shows, and more
+                </motion.h1>
+                <motion.h4
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="mt-4 text-xl font-medium sm:text-2xl md:text-3xl"
+                >
+                    Watch anywhere. Cancel anytime.
+                </motion.h4>
+                <motion.p
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 0.8 }}
+                    className="mt-4 text-lg sm:text-xl md:text-2xl"
+                >
+                    Ready to watch? Enter your email to create or restart membership.
+                </motion.p>
 
-                    <input
-                        {...register("password")}
-                        type="password"
-                        placeholder="Password"
-                        className="w-full h-12 p-3 mb-3 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    />
-                    {errors.password && <p className="mb-2 text-sm text-red-500">{errors.password.message}</p>}
-
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full py-3 text-lg font-bold text-white bg-red-600 rounded-md hover:bg-red-700"
+                <motion.form
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1, duration: 0.8 }}
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="w-full max-w-md p-8 mt-8 border rounded-lg shadow-2xl bg-black/80 backdrop-blur-lg border-white/10"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1.2, duration: 0.8 }}
+                        className="space-y-6"
                     >
-                        {isSubmitting ? "Loading..." : "Sign Up"}
-                    </button>
-                </form>
-            </div>
+                        <div>
+                            <input {...register("email")} type="email" placeholder="Email" className="w-full px-4 py-3 text-lg text-white transition-all duration-300 rounded-md bg-white/10 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                            {errors.email && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2 text-sm text-red-500">{errors.email.message}</motion.p>}
+                        </div>
+                        <div>
+                            <input {...register("password")} type="password" placeholder="Password" className="w-full px-4 py-3 text-lg text-white transition-all duration-300 rounded-md bg-white/10 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                            {errors.password && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2 text-sm text-red-500">{errors.password.message}</motion.p>}
+                        </div>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" disabled={isSubmitting} className="w-full px-6 py-3 text-lg font-bold text-white transition-all duration-300 rounded-md bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600">{isSubmitting ? "Loading..." : "Sign Up"}</motion.button>
+                    </motion.div>
+                </motion.form>
+            </motion.div>
         </div>
     );
 };

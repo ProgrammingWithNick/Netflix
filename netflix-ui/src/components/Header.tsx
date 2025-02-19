@@ -1,5 +1,6 @@
 import { logoImg } from "../utils/images";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion"; // Import motion from Framer Motion for animations
 
 interface LogInProps {
     login: boolean;
@@ -7,27 +8,41 @@ interface LogInProps {
 
 const Header = ({ login }: LogInProps) => {
     const navigate = useNavigate();
-    const location = useLocation(); // ✅ Correct way to get current path
+    const location = useLocation();
 
     return (
-        <header className="w-full py-4 bg-transparent">
+        <motion.header
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="top-0 left-0 z-50 w-full py-4 bg-transparent  backdrop-blur-sm"
+        >
             <div className="container flex items-center justify-between px-5 mx-auto md:px-10">
-                {/* Logo */}
-                <img
-                    src={logoImg}
-                    alt="logo"
-                    className="h-12 md:h-16 max-w-[120px] md:max-w-[150px]"
-                />
+                {/* Logo with hover animation */}
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="cursor-pointer"
+                >
+                    <img
+                        src={logoImg}
+                        alt="logo"
+                        className="h-12 md:h-16 max-w-[120px] md:max-w-[150px]"
+                        onClick={() => navigate("/")} // Navigate to home on logo click
+                    />
+                </motion.div>
 
-                {/* Login/Signup Button */}
-                <button
+                {/* Login/Signup Button with animations */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => navigate(location.pathname === "/login" ? "/signup" : "/login")}
-                    className="px-4 py-2 text-sm font-semibold text-white transition bg-red-700 rounded-lg hover:bg-red-800 md:px-5 md:py-2 md:text-base"
+                    className="px-6 py-2 text-sm font-semibold text-white transition-all duration-300 rounded-lg shadow-lg bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 hover:shadow-red-500/30"
                 >
                     {location.pathname === "/login" ? "Sign Up" : "Log In"}
-                </button>
+                </motion.button>
             </div>
-        </header>
+        </motion.header>
     );
 };
 

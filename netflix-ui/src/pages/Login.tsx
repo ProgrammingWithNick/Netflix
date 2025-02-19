@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import BackgroundImage from "../components/BackgroundImage";
 import Header from "../components/Header";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
@@ -48,38 +49,51 @@ const Login = () => {
             <BackgroundImage />
             <div className="absolute top-0 w-full">
                 <Header login={isSubmitting} />
-                <div className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3">
+                <motion.div
+                    className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3"
+                    initial={{ opacity: 0, y: -50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <h2 className="mb-6 text-2xl font-bold text-center">Sign In</h2>
                     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
                         <div className="flex flex-col gap-4">
-                            <input
+                            <motion.input
                                 {...register("email")}
                                 type="email"
                                 placeholder="Email"
                                 className="w-full p-3 text-black rounded-md"
                                 required
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5 }}
                             />
                             {errors.email && <p className="text-red-500">{errors.email.message}</p>}
 
-                            <input
+                            <motion.input
                                 {...register("password")}
                                 type="password"
                                 placeholder="Password"
                                 className="w-full p-3 text-black rounded-md"
                                 required
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5 }}
                             />
                             {errors.password && <p className="text-red-500">{errors.password.message}</p>}
 
-                            <button
+                            <motion.button
                                 type="submit"
                                 disabled={isSubmitting}
                                 className="w-full py-3 font-bold text-white bg-red-600 rounded-md hover:bg-red-700"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
                                 {isSubmitting ? "Logging in..." : "Log In"}
-                            </button>
+                            </motion.button>
                         </div>
                     </form>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
