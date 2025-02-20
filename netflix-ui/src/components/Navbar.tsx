@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { logoImg } from "../utils/images";
 import { FaPowerOff, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { firebaseAuth } from "../utils/firebase";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavItemProps {
     name: string;
@@ -25,26 +25,41 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
     const [showSearch, setShowSearch] = useState<boolean>(false);
     const [inputHover, setInputHover] = useState<boolean>(false);
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
+    const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
     // Navigation links
     const links: NavItemProps[] = [
         { name: "Home", link: "/" },
         { name: "Movies", link: "/movies" },
-        { name: "TV Shows", link: "/tv" },
+        // { name: "TV Shows", link: "/tv" },
         { name: "My List", link: "/mylist" }
     ];
 
     // Check authentication state
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser ) => {
-            if (!currentUser ) navigate("/login");
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+            if (!currentUser) navigate("/login");
         });
         return () => unsubscribe();
     }, [navigate]);
 
+    // Handle click outside to hide the input field
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+                setShowSearch(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <nav className={`fixed top-0 z-50 w-full transition duration-300 ${isScrolled ? "bg-black/80 backdrop-blur-md" : "bg-transparent"}`}>
+        <nav className={`fixed top-0 z-50 w-full mb-20 transition duration-300 ${isScrolled ? "bg-black/80 backdrop-blur-md" : "bg-transparent"}`}>
             <div className="container flex items-center justify-between px-5 py-4 mx-auto md:px-10">
                 {/* Left - Logo & Navigation */}
                 <div className="flex items-center gap-6">
@@ -64,22 +79,27 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                 <div className="flex items-center gap-5">
                     {/* Search Box */}
                     <div className="relative flex items-center">
-                        {showSearch && (
-                            <motion.input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-40 px-3 py-1 text-black rounded-md md:w-56 focus:outline-none"
-                                onMouseEnter={() => setInputHover(true)}
-                                onMouseLeave={() => setInputHover(false)}
-                                onBlur={() => {
-                                    if (!inputHover) setShowSearch(false);
-                                }}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.3 }}
-                            />
-                        )}
-                        <button onClick={() => setShowSearch(!showSearch)} className="p-2 text-white rounded-md hover:bg-gray-700">
+                        <AnimatePresence>
+                            {showSearch && (
+                                <motion.input
+                                    ref={inputRef}
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="w-40 px-3 py-1 text-black rounded-md md:w-56 focus:outline-none focus:ring-2 "
+                                    onMouseEnter={() => setInputHover(true)}
+                                    onMouseLeave={() => setInputHover(false)}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            )}
+                        </AnimatePresence>
+                        <button
+                            onClick={() => setShowSearch(!showSearch)}
+                            className="p-2 text-white rounded-md focus:outline-none "
+                            aria-label="Search"
+                        >
                             <FaSearch className="w-5 h-5" />
                         </button>
                     </div>
@@ -97,27 +117,29 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
             </div>
 
             {/* Mobile Menu */}
-            {menuOpen && (
-                <motion.div
-                    className="absolute top-0 left-0 w-full h-screen bg-black/90 md:hidden"
-                    initial={{ opacity: 0, x: -100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <button onClick={() => setMenuOpen(false)} className="absolute text-white top-6 right-6">
-                        <FaTimes className="w-6 h-6" />
-                    </button>
-                    <ul className="flex flex-col items-center justify-center h-full gap-6 text-white">
-                        {links.map(({ name, link }) => (
-                            <NavItem key={name} name={name} link={link} />
-                        ))}
-                        <button onClick={() => signOut(firebaseAuth)} className="p-2 mt-4 text-white rounded-md hover:bg-gray-700">
-                            <FaPowerOff className="w-5 h-5" />
+            <AnimatePresence>
+                {menuOpen && (
+                    <motion.div
+                        className="absolute top-0 left-0 w-full h-screen bg-black/90 md:hidden"
+                        initial={{ opacity: 0, x: -100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <button onClick={() => setMenuOpen(false)} className="absolute text-white top-6 right-6">
+                            <FaTimes className="w-6 h-6" />
                         </button>
-                    </ul>
-                </motion.div>
-            )}
+                        <ul className="flex flex-col items-center justify-center h-full gap-6 text-white">
+                            {links.map(({ name, link }) => (
+                                <NavItem key={name} name={name} link={link} />
+                            ))}
+                            <button onClick={() => signOut(firebaseAuth)} className="p-2 mt-4 text-white rounded-md hover:bg-gray-700">
+                                <FaPowerOff className="w-5 h-5" />
+                            </button>
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </nav>
     );
 };
