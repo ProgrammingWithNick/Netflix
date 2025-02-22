@@ -2,11 +2,7 @@ import { logoImg } from "../utils/images";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion"; // Import motion from Framer Motion for animations
 
-interface LogInProps {
-    login: boolean;
-}
-
-const Header = ({ login }: LogInProps) => {
+const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -15,7 +11,7 @@ const Header = ({ login }: LogInProps) => {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="top-0 left-0 z-50 w-full py-4 bg-transparent  backdrop-blur-sm"
+            className="top-0 left-0 z-50 w-full py-4 bg-transparent backdrop-blur-sm"
         >
             <div className="container flex items-center justify-between px-5 mx-auto md:px-10">
                 {/* Logo with hover animation */}

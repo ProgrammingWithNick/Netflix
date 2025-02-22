@@ -19,8 +19,9 @@ const MyList = () => {
 
     useEffect(() => {
         const fetchMovies = () => {
-            const storedMovies = JSON.parse(localStorage.getItem("likedMovies") || "[]");
-            const uniqueMovies = Array.from(new Map(storedMovies.map(movie => [movie.id, movie])).values());
+            const storedMovies: Movie[] = JSON.parse(localStorage.getItem("likedMovies") || "[]");
+            const uniqueMovies = Array.from(new Map(storedMovies.map((movie: Movie) => [movie.id, movie])).values());
+
             setLikedMovies(uniqueMovies);
         };
 
@@ -76,7 +77,7 @@ const MyList = () => {
                                     className="object-cover w-full transition-transform duration-300 h-72 group-hover:scale-110"
                                     onClick={() => setSelectedMovie(movie)}
                                 />
-                                
+
                                 {/* ❌ Remove Button */}
                                 <button className="absolute p-2 bg-gray-900 rounded-full top-2 right-2 hover:bg-red-500" onClick={() => removeMovie(movie.id)}>
                                     <X size={20} />

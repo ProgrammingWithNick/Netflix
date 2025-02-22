@@ -8,11 +8,14 @@ import Slider from "../components/Slider";
 import { homeImg, homeTitleImg } from "../utils/images";
 import { FaPlay } from "react-icons/fa";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import { Movie } from "../utils/types";
 
 const Netflix = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
     const [isScrolled, setIsScrolled] = useState<boolean>(false);
+    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
 
     // ✅ Get Redux State
     const { genres, movies, genresLoaded } = useSelector((state: RootState) => state.netflix);
@@ -38,6 +41,8 @@ const Netflix = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+
 
     return (
         <div className="relative min-h-screen bg-black">
@@ -91,7 +96,17 @@ const Netflix = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                 >
-                    <Slider movies={movies} />
+                    <Slider
+                        movies={movies}
+                        onMovieClick={(movie: Movie) => {
+                            setSelectedMovie({
+                                ...movie,
+                                genre_ids: movie.genre_ids || [],
+                                overview: movie.overview || "No overview available",
+                                backdrop_path: movie.backdrop_path || "",
+                            });
+                        }}
+                    />
                 </motion.div>
             ) : (
                 <motion.p
@@ -103,6 +118,13 @@ const Netflix = () => {
                     🔄 Loading movies...
                 </motion.p>
             )}
+            {selectedMovie && (
+                <div className="absolute bottom-0 left-0 w-full p-4 text-white bg-black bg-opacity-70">
+                    <h2 className="text-xl font-bold">{selectedMovie.title}</h2>
+                    <p className="text-sm">{selectedMovie.overview}</p>
+                </div>
+            )}
+
         </div>
     );
 };

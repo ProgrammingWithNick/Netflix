@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppDispatch, fetchGenres, fetchMovies, RootState } from "../store/store";
 import Navbar from "../components/Navbar";
 import Slider from "../components/Slider";
 import SelectGenre from "../components/SelectGenre";
+import { Movie } from "../utils/types"; // Ensure you import the Movie type
 
 const Movies = () => {
-    const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
 
     const [isScrolled, setIsScrolled] = useState<boolean>(false);
-    const [selectedMovie, setSelectedMovie] = useState(null);
+    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [selectedGenre, setSelectedGenre] = useState<number | null>(null); 
 
     const { genres, movies, genresLoaded } = useSelector((state: RootState) => state.netflix);
@@ -31,7 +30,7 @@ const Movies = () => {
         }
     }, [dispatch, selectedGenre]); 
 
-    // ✅ Handle scroll event (Copied from Home Page)
+    // ✅ Handle scroll event
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener("scroll", handleScroll);
@@ -45,7 +44,7 @@ const Movies = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            {/* ✅ Navbar matches Home Page behavior */}
+            {/* ✅ Navbar */}
             <Navbar isScrolled={isScrolled} />
 
             {/* Main Content */}
@@ -55,11 +54,11 @@ const Movies = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
             >
-                {/* ✅ Pass setSelectedGenre to update genre */}
+                {/* ✅ Genre Selection */}
                 <SelectGenre genres={genres} onGenreSelect={setSelectedGenre} />
 
-                {movies.length ? (
-                    <Slider movies={movies} onMovieClick={setSelectedMovie} />
+                {movies.length > 0 ? (
+                    <Slider movies={movies} onMovieClick={(movie) => setSelectedMovie(movie)} />
                 ) : (
                     <motion.div
                         className="text-lg font-bold text-center text-gray-300"

@@ -47,7 +47,7 @@ const Signup = () => {
         <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
             <BackgroundImage />
             <div className="absolute top-0 left-0 w-full">
-                <Header login={isSubmitting} />
+                <Header />
             </div>
             <motion.div
                 initial={{ opacity: 0, y: 50 }}

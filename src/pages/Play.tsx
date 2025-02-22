@@ -1,4 +1,3 @@
-import React from "react";
 import { BsArrowLeft } from "react-icons/bs";
 import video from "../assets/video.mp4";
 import { motion } from "framer-motion"; // Import motion from Framer Motion for animations

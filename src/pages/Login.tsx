@@ -61,7 +61,7 @@ const Login = () => {
         <div className="relative flex items-center justify-center min-h-screen bg-black">
             <BackgroundImage />
             <div className="absolute top-0 w-full">
-                <Header login={isSubmitting} />
+                <Header />
                 <motion.div
                     className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto mt-20 text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3"
                     initial={{ opacity: 0, y: -50 }}

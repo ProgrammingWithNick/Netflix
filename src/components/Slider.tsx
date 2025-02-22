@@ -9,9 +9,10 @@ interface Movie {
 
 interface SliderProps {
     movies: Movie[];
+    onMovieClick: (movie: Movie) => void;
 }
 
-const Slider: React.FC<SliderProps> = ({ movies }) => {
+const Slider: React.FC<SliderProps> = ({ movies, onMovieClick }) => { 
     if (!movies || movies.length === 0) {
         return <p className="text-center text-white">No movies available.</p>;
     }
@@ -34,6 +35,7 @@ const Slider: React.FC<SliderProps> = ({ movies }) => {
                         key={index}
                         title={category.title}
                         data={category.data}
+                        onMovieClick={onMovieClick} 
                     />
                 )
             ))}

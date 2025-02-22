@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchMovieVideo } from "../store/store";
+import { fetchMovieVideo } from "../store/store"; // Ensure this is correctly imported
 import { X } from "lucide-react";
 
 interface Movie {
@@ -12,9 +12,10 @@ interface Movie {
 interface CardSliderProps {
     title: string;
     data: Movie[];
+    onMovieClick: (movie: Movie) => void;
 }
 
-const CardSlider: React.FC<CardSliderProps> = ({ title, data }) => {
+const CardSlider: React.FC<CardSliderProps> = ({ title, data, onMovieClick }) => { 
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -58,24 +59,19 @@ const CardSlider: React.FC<CardSliderProps> = ({ title, data }) => {
         setLoading(true);
         
         try {
-            const video = await fetchMovieVideo(movie.id);
-            console.log("Fetched Video URL:", video);
-
-            let embedUrl = null;
-            if (video.includes("watch?v=")) {
+            const video: string | null = await fetchMovieVideo(movie.id);
+    
+            let embedUrl: string | null = null;
+            if (video?.includes("watch?v=")) {
                 const videoId = new URL(video).searchParams.get("v");
                 if (videoId) {
                     embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0`;
                 }
-            } else if (video.includes("/embed/")) {
+            } else if (video?.includes("/embed/")) {
                 embedUrl = video;
             }
-
-            if (embedUrl) {
-                setVideoUrl(embedUrl);
-            } else {
-                console.error("Invalid video URL:", video);
-            }
+    
+            setVideoUrl(embedUrl || null);
         } catch (error) {
             console.error("Error fetching video:", error);
         } finally {
@@ -94,7 +90,10 @@ const CardSlider: React.FC<CardSliderProps> = ({ title, data }) => {
                             className="relative flex-shrink-0 w-56 overflow-hidden shadow-lg cursor-pointer h-72 rounded-xl"
                             whileHover={{ scale: 1.05, rotateY: 10 }}
                             transition={{ type: "spring", stiffness: 200 }}
-                            onClick={() => handleOpenModal(movie)}
+                            onClick={() => {
+                                handleOpenModal(movie);
+                                onMovieClick(movie);
+                            }}
                         >
                             <img
                                 src={movie.poster_path

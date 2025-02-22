@@ -28,8 +28,8 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
-    const inputRef = useRef(null);
     const navigate = useNavigate();
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     const links: NavItemProps[] = [
         { name: "Home", link: "/" },
@@ -44,18 +44,21 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
         return () => unsubscribe();
     }, [navigate]);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
-                setShowSearch(false);
-                setSuggestions([]);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    
+
+useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+            setShowSearch(false);
+            setSuggestions([]);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+}, []);
+
 
     useEffect(() => {
         if (searchQuery.length > 2) {
