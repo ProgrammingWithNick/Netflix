@@ -18,13 +18,13 @@ const Slider: React.FC<SliderProps> = ({ movies, onMovieClick }) => {
     }
 
     const categories = [
-        { title: "Trending Now", data: movies.slice(0, 10) },
-        { title: "New Releases", data: movies.slice(10, 20) },
-        { title: "Action Movies", data: movies.slice(20, 30) },
-        { title: "Comedy Movies", data: movies.slice(30, 40) },
-        { title: "Horror Movies", data: movies.slice(40, 50) },
-        { title: "Animation Movies", data: movies.slice(50, 60) },
-        { title: "Sci-Fi Movies", data: movies.slice(60, 70) },
+        { title: "New Releases", data: movies.slice(0, 10) },
+        { title: "Action Movies", data: movies.slice(10, 20) },
+        { title: "Blockbuster Movies", data: movies.slice(20, 30) },
+        { title: "Popular On Netflix", data: movies.slice(30, 40) },
+        { title: "Epics", data: movies.slice(40, 50) },
+        { title: "Trending Now", data: movies.slice(50, 60) },
+        { title: "Film Available", data: movies.slice(60, 70) },
     ];
 
     return (
