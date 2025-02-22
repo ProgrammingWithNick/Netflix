@@ -46,19 +46,20 @@ const Signup = () => {
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
             <BackgroundImage />
-            <div className="absolute inset-0 bg-black/60"></div>
-            <Header login={isSubmitting} />
+            <div className="absolute top-0 left-0 w-full">
+                <Header login={isSubmitting} />
+            </div>
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="z-10 flex flex-col items-center w-full px-4 text-center text-white sm:px-10 md:max-w-2xl"
+                className="z-10 flex flex-col items-center w-full px-4 text-center text-white mt-9 sm:px-10 md:max-w-2xl"
             >
                 <motion.h1
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-3xl font-bold text-transparent  sm:text-5xl md:text-6xl bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text"
+                    className="text-3xl font-bold text-transparent sm:text-5xl md:text-5xl bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text"
                 >
                     Unlimited movies, TV shows, and more
                 </motion.h1>

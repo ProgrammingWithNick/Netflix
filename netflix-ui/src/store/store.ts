@@ -35,20 +35,65 @@ interface NetflixState {
 }
 
 // Initial state
+// const initialState: NetflixState = {
+//     movies: [],
+//     genresLoaded: false,
+//     genres: [],
+//     loading: false,
+//     error: null,
+// };
+
+interface NetflixState {
+    movies: Movie[];
+    genresLoaded: boolean;
+    genres: Genre[];
+    loading: boolean;
+    error: string | null;
+    likedMovies: Movie[]; // ✅ Add this
+}
+
 const initialState: NetflixState = {
     movies: [],
     genresLoaded: false,
     genres: [],
     loading: false,
     error: null,
+    likedMovies: [], // ✅ Initialize it
 };
 
+
+
+
+export const getTrailer = async (movieId: number) => {
+        try {
+            const res = await fetch(`${API_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+            const data = await res.json();
+    
+            if (!data || !data.results || data.results.length === 0) {
+                console.warn(`No trailers found for movie ID: ${movieId}`);
+                return "dQw4w9WgXcQ"; // 🔥 Default YouTube Trailer (Replace with your own)
+            }
+    
+            const trailer = data.results.find((video: any) => video.type === "Trailer" && video.site === "YouTube");
+            return trailer ? trailer.key : "dQw4w9WgXcQ"; // 🔥 Fallback trailer if none found
+        } catch (error) {
+            console.error("Error fetching trailer:", error);
+            return "dQw4w9WgXcQ"; // 🔥 Fallback trailer on error
+        }
+    };
+
 // ✅ Fetch Movies with error handling
-export const fetchMovies = createAsyncThunk<Movie[], { genreId: number }, { rejectValue: string }>(
+export const fetchMovies = createAsyncThunk<
+    Movie[], 
+    { genreId: number }, 
+    { rejectValue: string }
+>(
     "netflix/fetchMovies",
     async ({ genreId }, { rejectWithValue }) => {
         try {
-            // Fetch first page of movies for the selected genre
+            console.log(`Fetching movies for Genre ID: ${genreId}...`);
+
+            // ✅ Fetch first page
             const firstResponse = await fetch(
                 `${API_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_genres=${genreId}&page=1`
             );
@@ -63,33 +108,47 @@ export const fetchMovies = createAsyncThunk<Movie[], { genreId: number }, { reje
                 throw new Error("Invalid API response format");
             }
 
-            const totalPages = Math.min(firstData.total_pages, 5); // Fetch max 5 pages
+            console.log("First Page Movies:", firstData.results);
+
+            // ✅ Fetch remaining pages (up to 5 pages)
+            const totalPages = Math.min(firstData.total_pages, 5);
             console.log(`Total Pages for Genre ${genreId}: ${totalPages}`);
 
-            // Fetch all remaining pages in parallel
             const fetchPromises = [];
+
             for (let page = 2; page <= totalPages; page++) {
                 fetchPromises.push(
                     fetch(`${API_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_genres=${genreId}&page=${page}`)
-                        .then((res) => res.json())
-                        .then((data) => data.results)
+                        .then(async (res) => {
+                            if (!res.ok) throw new Error(`Failed to fetch page ${page}`);
+                            return res.json();
+                        })
+                        .then((data) => {
+                            console.log(`Movies from Page ${page}:`, data.results);
+                            return Array.isArray(data.results) ? data.results : [];
+                        })
+                        .catch((error) => {
+                            console.error(`Error fetching page ${page}:`, error.message);
+                            return []; // ✅ Prevents entire fetch from failing
+                        })
                 );
             }
 
-            // Wait for all pages to load
+            // ✅ Wait for all pages to load
             const remainingMovies = await Promise.all(fetchPromises);
 
-            // Merge results into a single array
+            // ✅ Merge all movie results
             const allMovies = [...firstData.results, ...remainingMovies.flat()];
 
-            console.log(`Total Movies Fetched for Genre ${genreId}:`, allMovies.length);
+            console.log(`✅ Total Movies Fetched for Genre ${genreId}:`, allMovies.length);
             return allMovies;
         } catch (error: any) {
-            console.error("Error fetching movies:", error.message);
+            console.error("❌ Error fetching movies:", error.message);
             return rejectWithValue(error.message);
         }
     }
 );
+
 
 
 
@@ -208,39 +267,36 @@ export const fetchDataGenres = createAsyncThunk<
 const NetflixSlice = createSlice({
     name: "Netflix",
     initialState,
-    reducers: {},
+    reducers: {
+        toggleLike: (state, action: PayloadAction<Movie>) => {
+            const movie = action.payload;
+            const isLiked = state.likedMovies.some((m) => m.id === movie.id);
+            
+            if (isLiked) {
+                // ✅ Remove if already liked
+                state.likedMovies = state.likedMovies.filter((m) => m.id !== movie.id);
+            } else {
+                // ✅ Add if not liked
+                state.likedMovies.push(movie);
+            }
+        },
+    },
     extraReducers: (builder) => {
         builder
-            // Fetch Movies
-            .addCase(fetchMovies.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchMovies.fulfilled, (state, action: PayloadAction<Movie[]>) => {
+            .addCase(fetchMovies.fulfilled, (state, action) => {
                 state.movies = action.payload;
                 state.loading = false;
             })
-            .addCase(fetchMovies.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload ?? "Unknown error";
-            })
-
-            // Fetch Genres
-            .addCase(fetchGenres.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchGenres.fulfilled, (state, action: PayloadAction<Genre[]>) => {
+            .addCase(fetchGenres.fulfilled, (state, action) => {
                 state.genres = action.payload;
                 state.genresLoaded = true;
                 state.loading = false;
-            })
-            .addCase(fetchGenres.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload ?? "Unknown error";
             });
     },
 });
+
+export const { toggleLike } = NetflixSlice.actions; // ✅ Export action
+
 
 // ✅ Redux Store
 export const store = configureStore({

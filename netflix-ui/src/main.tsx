@@ -9,14 +9,16 @@ import Signup from "./pages/Signup.tsx";
 import Play from "./pages/Play.tsx";
 import Movies from "./pages/Movies.tsx";
 import "./index.css";
-import TvShows from "./pages/TvShows.tsx";
+import MyList from "./pages/MyList.tsx";
+import NotFound from "./pages/NotFound.tsx";
+import MovieDetails from "./pages/MovieDetails.tsx";
 
 const router = createBrowserRouter([
   { path: "/", element: <Netflix /> },
-  { path: "/search", element: <Netflix /> },
   { path: "/movies", element: <Movies /> },
-  // { path: "/tv", element: <TvShows /> },
-  { path: "/my-list", element: <Netflix /> },
+  { path: "/mylist", element: <MyList /> },
+  {path:"/movie/:id", element: <MovieDetails />},
+  { path: "*", element: <NotFound />},
   { path: "/play", element: <Play /> },
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <Signup /> },

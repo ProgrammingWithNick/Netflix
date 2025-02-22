@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import BackgroundImage from "../components/BackgroundImage";
 import Header from "../components/Header";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { firebaseAuth } from "../utils/firebase";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -18,6 +18,9 @@ type FormField = z.infer<typeof schema>;
 
 const Login = () => {
     const navigate = useNavigate();
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetEmail, setResetEmail] = useState("");
+    const [resetMessage, setResetMessage] = useState("");
 
     const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<FormField>({
         resolver: zodResolver(schema),
@@ -27,22 +30,32 @@ const Login = () => {
         try {
             await signInWithEmailAndPassword(firebaseAuth, data.email, data.password);
         } catch (error: any) {
+            console.error("Login error:", error.code);
             if (error.code === "auth/user-not-found") {
                 setError("email", { message: "No account found with this email address" });
             } else if (error.code === "auth/wrong-password") {
                 setError("password", { message: "Incorrect password. Please try again." });
             } else {
-                console.error("Login error:", error);
+                setError("email", { message: "No account found. password is incorrect." });
             }
         }
     };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
-            if (currentUser) navigate("/"); // Navigate to home if logged in
+            if (currentUser) navigate("/");
         });
         return () => unsubscribe();
     }, [navigate]);
+
+    const handlePasswordReset = async () => {
+        try {
+            await sendPasswordResetEmail(firebaseAuth, resetEmail);
+            setResetMessage("Password reset email sent! Check your inbox.");
+        } catch (error: any) {
+            setResetMessage("Error sending reset email. Please try again.");
+        }
+    };
 
     return (
         <div className="relative flex items-center justify-center min-h-screen bg-black">
@@ -50,23 +63,20 @@ const Login = () => {
             <div className="absolute top-0 w-full">
                 <Header login={isSubmitting} />
                 <motion.div
-                    className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3"
+                    className="flex flex-col items-center justify-center w-full px-6 py-12 mx-auto mt-20 text-white bg-black rounded-lg bg-opacity-70 md:w-1/3 sm:w-2/3"
                     initial={{ opacity: 0, y: -50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <h2 className="mb-6 text-2xl font-bold text-center">Sign In</h2>
+                    <h2 className="mb-6 text-2xl font-bold text-center">LogIn</h2>
                     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-                        <div className="flex flex-col gap-4">
+                        <motion.div className="flex flex-col gap-4">
                             <motion.input
                                 {...register("email")}
                                 type="email"
                                 placeholder="Email"
                                 className="w-full p-3 text-black rounded-md"
                                 required
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5 }}
                             />
                             {errors.email && <p className="text-red-500">{errors.email.message}</p>}
 
@@ -76,9 +86,6 @@ const Login = () => {
                                 placeholder="Password"
                                 className="w-full p-3 text-black rounded-md"
                                 required
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5 }}
                             />
                             {errors.password && <p className="text-red-500">{errors.password.message}</p>}
 
@@ -91,10 +98,54 @@ const Login = () => {
                             >
                                 {isSubmitting ? "Logging in..." : "Log In"}
                             </motion.button>
-                        </div>
+                        </motion.div>
                     </form>
+                    <button onClick={() => setShowResetModal(true)} className="mt-4 text-sm text-gray-300 hover:underline">
+                        Forgot Password?
+                    </button>
                 </motion.div>
             </div>
+            
+            {/* Forgot Password Modal */}
+            <AnimatePresence>
+                {showResetModal && (
+                    <motion.div 
+                        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div 
+                            className="p-6 text-white bg-gray-900 rounded-lg shadow-lg w-96"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.8 }}
+                        >
+                            <h2 className="mb-4 text-xl font-bold">Reset Password</h2>
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
+                                className="w-full p-2 text-black rounded-md"
+                            />
+                            <button 
+                                onClick={handlePasswordReset} 
+                                className="w-full py-2 mt-4 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            >
+                                Send Reset Email
+                            </button>
+                            {resetMessage && <p className="mt-2 text-sm text-gray-300">{resetMessage}</p>}
+                            <button 
+                                onClick={() => setShowResetModal(false)} 
+                                className="mt-4 text-sm text-red-400 hover:underline"
+                            >
+                                Close
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

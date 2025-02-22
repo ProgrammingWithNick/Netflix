@@ -12,6 +12,10 @@ interface SliderProps {
 }
 
 const Slider: React.FC<SliderProps> = ({ movies }) => {
+    if (!movies || movies.length === 0) {
+        return <p className="text-center text-white">No movies available.</p>;
+    }
+
     const categories = [
         { title: "Trending Now", data: movies.slice(0, 10) },
         { title: "New Releases", data: movies.slice(10, 20) },
@@ -25,11 +29,13 @@ const Slider: React.FC<SliderProps> = ({ movies }) => {
     return (
         <div className="p-4 space-y-8">
             {categories.map((category, index) => (
-                <CardSlider
-                    key={index}
-                    title={category.title}
-                    data={category.data}
-                />
+                category.data.length > 0 && (
+                    <CardSlider
+                        key={index}
+                        title={category.title}
+                        data={category.data}
+                    />
+                )
             ))}
         </div>
     );
