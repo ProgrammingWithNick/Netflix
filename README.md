@@ -5,7 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
-A stunning Netflix Clone made with ⚡ Vite, 💙 React, and 💡 TypeScript — featuring cinematic UI animations, live search, autoplay trailers, and more.
+A stunning Netflix Clone made with ⚡ Vite, 💙 React, and 💡 TypeScript — featuring cinematic UI animations, live search, autoplay trailers, and more..
 
 > 🔥 Smooth. Fast. Beautiful. Just like Netflix, but yours.
 
